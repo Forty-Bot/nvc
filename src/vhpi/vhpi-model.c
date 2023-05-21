@@ -142,8 +142,11 @@ DEF_CLASS(physTypeDecl, vhpiPhysTypeDeclK, scalar.typeDecl.decl.object);
 
 typedef struct {
    c_compositeTypeDecl composite;
+   c_typeDecl         *ElemType;
    vhpiIntT            NumDimensions;
 } c_arrayTypeDecl;
+
+DEF_CLASS(arrayTypeDecl, vhpiArrayTypeDeclK, composite.typeDecl.decl.object);
 
 typedef struct {
    c_compositeTypeDecl composite;
@@ -912,6 +915,14 @@ vhpiHandleT vhpi_handle(vhpiOneToOneT type, vhpiHandleT referenceHandle)
             return handle_for(&(d->Type->decl.object));
       }
 
+   case vhpiElemType:
+      {
+         c_arrayTypeDecl *a = cast_arrayTypeDecl(obj);
+         if (a == NULL)
+            return NULL;
+         return handle_for(&(a->ElemType->decl.object));
+      }
+
    case vhpiDesignUnit:
       {
          c_designInstUnit *iu = cast_designInstUnit(obj);
@@ -1603,6 +1614,8 @@ static c_physRange *build_phys_range(tree_t t)
    return pr;
 }
 
+static c_typeDecl *cached_typeDecl(type_t type);
+
 static c_typeDecl *build_typeDecl(type_t type)
 {
    ident_t id = type_ident(type);
@@ -1649,6 +1662,7 @@ static c_typeDecl *build_typeDecl(type_t type)
             new_object(sizeof(c_arrayTypeDecl), vhpiArrayTypeDeclK);
          init_compositeTypeDecl(&(td->composite), decl, id);
          td->NumDimensions = type_index_constrs(type);
+         td->ElemType = cached_typeDecl(type_elem(type));
          return &(td->composite.typeDecl);
       }
 
