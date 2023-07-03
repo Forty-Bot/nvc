@@ -2250,7 +2250,7 @@ static void type_copy_cb(type_t type, void *__ctx)
 {
    copy_ctx_t *ctx = __ctx;
 
-   if (type_has_ident(type))
+   if (type_kind(type) == T_PROTECTED && type_has_ident(type))
       list_add(&ctx->copied_types, type);
 }
 
